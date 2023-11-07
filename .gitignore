@@ -9,3 +9,5 @@ global-exclude Scripts/*
 
 # Ignore */share/*
 global-exclude share/*
+
+.env
