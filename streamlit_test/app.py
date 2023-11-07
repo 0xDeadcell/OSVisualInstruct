@@ -10,7 +10,7 @@ from io import BytesIO
 
 # Load environment variables
 load_dotenv()
-API_KEY = st.secrets["API_KEY"]
+# API_KEY = st.secrets["API_KEY"]
 
 def capture_screen():
     screenshot = ImageGrab.grab()

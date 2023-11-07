@@ -11,3 +11,5 @@ global-exclude Scripts/*
 global-exclude share/*
 
 .env
+*.pyc
+**/streamlit_test/env/
