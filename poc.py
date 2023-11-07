@@ -60,12 +60,13 @@ print(response.choices[0])
 pyauto_gui_code_response = client.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=[
-        {"role": "system", "content": "Write out a one-liner with pyautogui that performs the action based on the original prompt, and the determined x,y coordinates provided by the Vision Assistant (you can assume the user ran `import pyautogui` first before running your one-liner so only provide the code and no extra formatting):"},
-        {"role": "user", "content": f"'Original Prompt: {USER_PROMPT}'\n\n 'Vision Assistant Answer: {response.choices[0].text}'"}
-    ]
+        {"role": "system", "content": "Write out a one-liner with pyautogui that performs the action based on the original prompt, and the determined x,y coordinates provided by the Vision Assistant (you can assume the user ran `import pyautogui` first before running your one-liner so only provide the code and no extra formatting)"},
+        {"role": "user", "content": f"'Original Prompt: {USER_PROMPT}'\n\n 'Vision Assistant Answer: {response.choices[0].message.content}'"}
+    ],
     max_tokens=400,
 )
 
 import pyautogui
 # Yes, this is dangerous (*sweats nervously), but it's just a proof of concept
-eval(pyauto_gui_code_response.choices[0].text)
+print(f"[+] Running the following code: {pyauto_gui_code_response.choices[0].message.content}")
+eval(pyauto_gui_code_response.choices[0].message.content)

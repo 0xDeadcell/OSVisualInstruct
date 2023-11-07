@@ -72,6 +72,7 @@ def create_grid_overlay(screenshot_path, div_factor=20, extend_top=50, extend_le
 
 # Call the function to create the grid overlay
 matplotlib_grid_output_path = create_grid_overlay(SCREENSHOT_PATH)
+# Chunk image into 4 sections
 
 
 # Open the image with the grid overlay
