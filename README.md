@@ -76,6 +76,7 @@ https://github.com/haotian-liu/LLaVA (Potential Open Source Alternative to Visio
 
 https://openai.com/blog/new-models-and-developer-products-announced-at-devday
 https://platform.openai.com/docs/guides/vision
+https://cookbook.openai.com/examples/gpt_with_vision_for_video_understanding
 ```py
 from openai import OpenAI
 
