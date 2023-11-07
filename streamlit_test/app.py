@@ -53,9 +53,9 @@ def translate_to_pyautogui(actions: list) -> list:
 
 def main():
     st.title('Interactive Screen Automation Tool')
-    user_prompt = st.text_input('Enter your command')
+    user_prompt = st.text_input('Enter your prompt')
 
-    if st.button('Execute Command'):
+    if st.button('Complete Action'):
         if user_prompt:
             screenshot_path = capture_screen()
             actions = process_screenshot(screenshot_path, user_prompt)
@@ -68,7 +68,7 @@ def main():
             for command in commands:
                 command()
         else:
-            st.warning('Please enter a command.')
+            st.warning('Please enter a prompt.')
 
 def sidebar_content():
     st.sidebar.title("About")
