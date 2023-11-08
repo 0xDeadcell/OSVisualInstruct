@@ -1,6 +1,25 @@
 ## Training
 
+
 ### Steps
+```ps1
+.\collect_screenshots.ps1
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### ~~Old Steps~~
 ```ps1
 .\Get-InstalledApplications.ps1 # Create AllApps.csv in the local directory
 ```
