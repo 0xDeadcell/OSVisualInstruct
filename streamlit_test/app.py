@@ -174,6 +174,7 @@ def convert_text_to_pyautogui_actions(text: str) -> list:
             # You may need to adapt this part depending on the format of other actions
             action_command = action.split("(")[0]
             action_args = action.split("(")[1].rstrip(')').split(", ") if "(" in action else []
+            action_args = [arg.strip('"') for arg in action_args] # Remove any extra quotes
             actions.append([action_command] + action_args)
 
     # Translate the structured actions into pyautogui commands
