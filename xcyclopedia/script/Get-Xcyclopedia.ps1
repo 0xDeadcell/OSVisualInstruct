@@ -15,7 +15,7 @@ function Get-Xcyclopedia {
         [string]$save_path               = "..\output", #path to save output, changed to current directory\output
         [string[]]$target_path_recursive = @("$env:APPDATA\Microsoft\Windows\Start Menu\Programs", "$env:ProgramFiles", "${env:ProgramFiles(x86)}", "$env:windir\system32"), #target path for recursive dir, updated paths
         [string[]]$target_path           = @("$env:windir"),  # Target path for NON-recursive dir
-        [string[]]$target_file_extension = @("exe", "lnk"),  # File extensions to target, changed to a list including .lnk
+        [string[]]$target_file_extension = @(".exe", ".lnk"),  # File extensions to target, changed to a list including .lnk
         [bool]$execute_files             = $true,  # In order for syntax/usage info to be gathered (stdout/stderr), the files must be executed. Changed to true.
         [bool]$take_screenshots          = $true,  # Take a screenshot if a given process has a window visible. Changed to true.
         [bool]$minimize_windows          = $true,  # Minimizing windows helps with screenshots. Changed to true.
@@ -137,7 +137,9 @@ function Get-Xcyclopedia {
 
     # Get directory listing of specified directories (comma delimited) and file extension
     $files = $null
-    $files = Get-FileList -path_recursive $target_path_recursive  -path_normal $target_path -file_extension "$target_file_extension"
+    # $files = Get-FileList -path_recursive $target_path_recursive  -path_normal $target_path -file_extension "$target_file_extension"
+    $files = Get-FileList -path_recursive $target_path_recursive -path_normal $target_path -file_extension $target_file_extension
+
 
     # Blacklisted Args - Arguments to skip (NOTE: $true = skip ALL arguments, i.e. do not execute that file)
     $arg_filters = [PSCustomObject]@{}
@@ -579,13 +581,13 @@ function Remove-NonAsciiCharacters {
 function Get-FileList {
     param (
         # Specifies directories for *recursive* directory walk 
-        [string[]]$path_recursive = @("$env:windir\system32", "$env:windir\SysWOW64", "$env:ProgramData", "$env:APPDATA\Microsoft\Windows\Start Menu\Programs", "$env:ProgramFiles", "${env:ProgramFiles(x86)}"),
+        [string[]]$path_recursive,
 
         # Specifies directories for normal dir listing (non-recursive)
-        [string[]]$path_normal = @("$env:windir"),
+        [string[]]$path_normal,
 
-        # Set file extension(s) to filter
-        [string[]]$file_extension = @("exe","lnk")
+        # Set file extension(s) to filter, including the dot
+        [string[]]$file_extension
     )
 
     # Ensure $file_extension is an array even if a single string is provided
@@ -593,22 +595,27 @@ function Get-FileList {
         $file_extension = @($file_extension)
     }
 
-    $dir = $files_output = $null
-
     Write-Host "Starting directory listing..."
 
-    $dir = $path_recursive | ForEach-Object {
+    # Collect files from recursive paths
+    $files_recursive = $path_recursive | ForEach-Object {
         Write-Host "--> Starting directory listing... $_ (recursive)"
         Get-ChildItem -Path $_ -File -Recurse -ErrorAction SilentlyContinue
     }
-    $dir += $path_normal | ForEach-Object {
+
+    # Collect files from non-recursive paths
+    $files_normal = $path_normal | ForEach-Object {
         Write-Host "--> Starting directory listing... $_"
         Get-ChildItem -Path $_ -File -ErrorAction SilentlyContinue
     }
 
+    # Combine the lists
+    $all_files = $files_recursive + $files_normal
+
     # Filter down to just the specified file extension(s)
-    $files_output = $dir | Where-Object {
-        $file_extension -contains $_.Extension
+
+    $files_output = $all_files | Where-Object {
+        $file_extension -contains $_.Extension.ToLower()
     }
 
     $file_count = $files_output.Count
@@ -618,6 +625,7 @@ function Get-FileList {
 
     return $files_output
 }
+
 
 function Copy-FileStager {
 
