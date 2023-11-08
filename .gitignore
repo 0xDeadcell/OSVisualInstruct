@@ -13,3 +13,10 @@ global-exclude share/*
 .env
 *.pyc
 **/streamlit_test/env/
+
+global-exclude **/bin/*
+global-exclude **/lib/*
+global-exclude **/include/*
+global-exclude **/output/*
+output/*
+old/*
