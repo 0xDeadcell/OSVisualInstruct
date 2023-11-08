@@ -12,7 +12,7 @@ function Get-Xcyclopedia {
     # set-executionpolicy unrestricted -force
 
     param (
-        [string]$save_path               = (Resolve-Path '..\output'), #path to save output, changed to current directory\output
+        [string]$save_path               = "$env:USERPROFILE\source\repos\OSVisualInstruct\output", #path to save output, changed to current directory\output
         [string[]]$target_path_recursive = @("$env:APPDATA\Microsoft\Windows\Start Menu\Programs", "$env:ProgramFiles", "${env:ProgramFiles(x86)}", "$env:windir\system32"), #target path for recursive dir, updated paths
         [string[]]$target_path           = @("$env:windir"),  # Target path for NON-recursive dir
         [string[]]$target_file_extension = @(".exe", ".lnk"),  # File extensions to target, changed to a list including .lnk
