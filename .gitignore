@@ -15,8 +15,20 @@ global-exclude share/*
 **/streamlit_test/env/
 
 global-exclude **/bin/*
+global-exclude **/script/*
 global-exclude **/lib/*
 global-exclude **/include/*
 global-exclude **/output/*
 output/*
 old/*
+*.zip
+*.png
+*.txt
+**/bin*
+xcyclopedia/script/bin/*
+*.exe
+
+
+xcyclopedia/script/bin/
+xcyclopedia/script/bin/**
+**/xcyclopedia/script/bin/**
