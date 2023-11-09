@@ -31,17 +31,35 @@ function Start-ProcessGetOutput {
             window_title = $null
     }
 
-    # initialize process parameters
+    # Check if file is a .lnk file
+    if ($filepath -like "*.lnk") {
+        $wsh = New-Object -ComObject WScript.Shell
+        $link = $wsh.CreateShortcut($filepath)
+        $filepath = $link.TargetPath
+        $lnkArguments = $link.Arguments
+
+        # Use arguments from .lnk file if available
+        if ([string]::IsNullOrWhiteSpace($commandline) -and -not [string]::IsNullOrWhiteSpace($lnkArguments)) {
+            $commandline = $lnkArguments
+        } elseif ([string]::IsNullOrWhiteSpace($commandline)) {
+            $commandline = ""
+        }
+    }
+
+    # Initialize process parameters
     $psi = New-object System.Diagnostics.ProcessStartInfo 
     $psi.CreateNoWindow = $true 
     $psi.UseShellExecute = $false 
     $psi.RedirectStandardOutput = $true 
     $psi.RedirectStandardError = $true 
     $psi.FileName = "$filepath" 
-    $psi.Arguments = @("$commandline") 
+    $psi.Arguments = "$commandline"
     $process = New-Object System.Diagnostics.Process 
     $process.StartInfo = $psi 
     
+    # Make it work for .lnk files too:
+    #
+
     # start process
     try { 
         $process.Start() | Out-Null

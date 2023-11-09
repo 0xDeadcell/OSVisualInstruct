@@ -13,9 +13,9 @@ function Get-Xcyclopedia {
 
     param (
         [string]$save_path               = "$env:USERPROFILE\source\repos\OSVisualInstruct\output", #path to save output, changed to current directory\output
-        [string[]]$target_path_recursive = @("$env:APPDATA\Microsoft\Windows\Start Menu\Programs", "$env:ProgramFiles", "${env:ProgramFiles(x86)}", "$env:windir\system32"), #target path for recursive dir, updated paths
-        [string[]]$target_path           = @("$env:windir"),  # Target path for NON-recursive dir
-        [string[]]$target_file_extension = @(".exe", ".lnk"),  # File extensions to target, changed to a list including .lnk
+        [string[]]$target_path_recursive = @("$env:APPDATA\Microsoft\Windows\Start Menu\Programs","$env:ProgramFiles","${env:ProgramFiles(x86)}","$env:LOCALAPPDATA"), #target path for recursive dir, updated paths
+        [string[]]$target_path           = @("$env:APPDATA\Microsoft\Windows\Start Menu\Programs"),  # Target path for NON-recursive dir
+        [string[]]$target_file_extension = @(".lnk"),  # File extensions to target, changed to a list including .lnk
         [bool]$execute_files             = $true,  # In order for syntax/usage info to be gathered (stdout/stderr), the files must be executed. Changed to true.
         [bool]$take_screenshots          = $true,  # Take a screenshot if a given process has a window visible. Changed to true.
         [bool]$minimize_windows          = $true,  # Minimizing windows helps with screenshots. Changed to true.
@@ -124,7 +124,7 @@ function Get-Xcyclopedia {
     if ($path_to_file_arg2) { $staged_file2 = Copy-FileStager -file_to_be_staged "$path_to_file_arg2" -save_path "$save_path" }
 
     # Specify list of arguments to be executed
-    $args_list = @("/?","/h","-h","-help","help","--help")
+    $args_list = @("")
     if ($staged_file1) { $args_list += @("$($staged_file1.FullName)") }
     if ($staged_file2) { $args_list += @("$($staged_file2.FullName)") }
 
@@ -327,7 +327,7 @@ function Get-Xcyclopedia {
         $filename_unique = "$filename-$filehash_md5"
 
         #Gather runtime data through execution
-        if($execute_files -AND ($fileextension -eq ".exe" )) {
+        if($execute_files -AND ($fileextension -eq ".exe" -or $fileextension -eq ".lnk")) {
 
             Write-Host "Starting execution of $filepath..."
 

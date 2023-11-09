@@ -46,4 +46,4 @@ if (-not (Test-Path -Path $handleExe)) {
 
 
 # .\xcyclopedia\script\Get-Xcyclopedia.ps1 -save_path ".\output" -take_screenshots -minimize_windows -target_file_extension ".exe,.lnk" -execute_files -target_path_recursive "$env:APPDATA\Microsoft\Windows\Start Menu\Programs,$env:ProgramFiles\,${env:ProgramFiles(x86)}\,$env:windir\system32"
-.\xcyclopedia\script\Get-Xcyclopedia.ps1 -save_path "$env:USERPROFILE\source\repos\OSVisualInstruct\output" -take_screenshots -minimize_windows -target_file_extension ".exe",".lnk" -execute_files -target_path_recursive "$env:APPDATA\Microsoft\Windows\Start Menu\Programs","$env:ProgramFiles","${env:ProgramFiles(x86)}","$env:windir\system32","$env:LOCALAPPDATA"
+.\xcyclopedia\script\Get-Xcyclopedia.ps1 -save_path "$env:USERPROFILE\source\repos\OSVisualInstruct\output" -take_screenshots -minimize_windows -target_file_extension ".exe",".lnk" -execute_files -target_path_recursive "$env:APPDATA\Microsoft\Windows\Start Menu\Programs","$env:ProgramFiles","${env:ProgramFiles(x86)}","$env:LOCALAPPDATA"
