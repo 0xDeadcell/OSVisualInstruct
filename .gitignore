@@ -32,3 +32,6 @@ xcyclopedia/script/bin/*
 xcyclopedia/script/bin/
 xcyclopedia/script/bin/**
 **/xcyclopedia/script/bin/**
+*.mp4
+*.avi
+*.avi

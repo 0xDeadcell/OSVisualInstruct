@@ -31,15 +31,18 @@ def screen_recording(executable_path, recording_name, capture_full_screen=True):
             print("No active window detected, skipping recording.")
             return
 
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter(f'{RECORDINGS_DIR}/{recording_name}.avi', fourcc, 8.0, (monitor['width'], monitor['height']))
+        fourcc = cv2.VideoWriter_fourcc(*'x264')
+        out = cv2.VideoWriter(f'{RECORDINGS_DIR}/{recording_name}.mp4', fourcc, 8.0, (monitor['width'], monitor['height']))
 
         # Start the executable
         process = subprocess.Popen(executable_path, shell=True)
 
         start_time = time.time()
         while time.time() - start_time < RECORD_TIME:
+            # img = np.array(sct.grab(monitor))
+            # out.write(img)
             img = np.array(sct.grab(monitor))
+            img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)  # Convert frame format if necessary
             out.write(img)
 
         # Clean up
