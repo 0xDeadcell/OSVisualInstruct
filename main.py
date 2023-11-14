@@ -48,10 +48,10 @@ def kill_focused_process():
 
 def keyboard_listener(start_event, stop_event, kill_event):
     try:
-        print("Press CTRL+HOME to start recording.")
+        print("Press CTRL+HOME to start recording (when focused on app/window.)")
         keyboard.wait('ctrl+home')
         start_event.set()
-        print("Recording started. Press CTRL+END to stop.")
+        print("Recording started. Press CTRL+END to stop (when focused on app/window).)")
         keyboard.wait('ctrl+end')
         stop_event.set()
         kill_event.set()  # Signal that the process should be killed
