@@ -45,7 +45,7 @@ def screen_recording(executable_path, recording_name, capture_full_screen=True):
         # Clean up
         process.terminate()
         out.release()
-        cv2.destroyAllWindows()
+        #cv2.destroyAllWindows()
 
 def main():
     if not os.path.exists(RECORDINGS_DIR):
