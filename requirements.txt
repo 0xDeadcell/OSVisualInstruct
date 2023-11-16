@@ -1,0 +1,11 @@
+mss
+pygetwindow
+winshell
+opencv-python
+pypiwin32
+psutil
+keyboard
+pywinauto
+
+pywin32
+psutil
