@@ -153,8 +153,11 @@ def main():
             start_event = threading.Event()
             stop_event = threading.Event()
             kill_event = threading.Event()  # Used to signal when to kill the process
-
-            process = subprocess.Popen(executable_path, shell=False)
+            try:
+                process = subprocess.Popen(executable_path, shell=False)
+            except Exception as e:
+                print(f"An error occurred while starting the process: {e}\nSkipping {item_name}.")
+                continue
             print(f"Started {executable_path}")
 
             fullscreen_thread = threading.Thread(target=screen_recording, args=(executable_path, app_recording_dir, f"{item_name}_fullscreen", True, start_event, stop_event))
