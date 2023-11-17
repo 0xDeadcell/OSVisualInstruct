@@ -154,10 +154,18 @@ def main():
             stop_event = threading.Event()
             kill_event = threading.Event()  # Used to signal when to kill the process
             try:
-                process = subprocess.Popen(executable_path, shell=False)
+                process = subprocess.Popen(executable_path, shell=True)
             except Exception as e:
-                print(f"An error occurred while starting the process: {e}\nSkipping {item_name}.")
-                continue
+                try:
+                    if not executable_path:
+                        raise Exception("Executable path is empty.")
+                    # Try to open the executable with pywinauto
+                    print("Failed to start the process with subprocess. Trying with pywinauto.", {executable_path})
+                    app = Application(backend="uia").start(executable_path)
+                    process = app.process
+                except Exception as e:
+                    print(f"An error occurred while starting the process: {e}\nSkipping {item_name}.")
+                    continue
             print(f"Started {executable_path}")
 
             fullscreen_thread = threading.Thread(target=screen_recording, args=(executable_path, app_recording_dir, f"{item_name}_fullscreen", True, start_event, stop_event))
