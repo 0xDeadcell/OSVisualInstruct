@@ -107,7 +107,7 @@ QStackedWidget {
 	border-radius: 10px;
 }</string>
      </property>
-     <widget class="QLabel" name="label">
+     <widget class="QLabel" name="screen_label">
       <property name="geometry">
        <rect>
         <x>0</x>
@@ -121,9 +121,6 @@ QStackedWidget {
       </property>
       <property name="text">
        <string/>
-      </property>
-      <property name="pixmap">
-       <pixmap resource="assets/resource.qrc">:/assets/sample_screenshot.png</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>

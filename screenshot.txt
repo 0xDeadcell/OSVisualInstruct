@@ -1,0 +1,92 @@
+J File Edit Selection View Go
+
+fs
+se)
+®
+4
+
+EXPLORER,
+
+\ OPEN EDITORS
+>) Welcome
+X ® mainpy
+® firstpage.py
+\ OSVISUALINSTRUCT
+> _pycache_
+> assets
+> docs
+gitignore
+convertdlg.bat
+convertpy.bat
+firstpage.py
+firstpage.ui
+
+>
+
+main.py
+new_task py
+new_task.ui
+README.md
+
+Tesource_rc.py
+
+@
+tTROMmPM*YAA
+
+resource.py
+® testpy
+
+\ PROBLEMS
+Filter (e.g, text, **/*.ts,
+
+No problems have bee!
+
+(2) ©
+§ob > OUTLINE
+
+> TIMELINE
+
+Run
+
+Terminal Help
+
+TASKS
+
+Show Al Vision preview
+
+WEG] & firstmilestones Cf @oAo Wo &
+
+OSVisuallnstruct Assistant
+
+P osVisualinstruct
+
+Type your message here....
+
+10\0SVisualInstruct\main. py*
+
+mOoGGuUdiv Ges
+
+ory
+
+alInst
+thon-2
+B\n_
+
+> = ilinst
+e thon-2
+
+_13\11_
+
+9 You,now Ln 198, Col 42 (170 selected) Spaces:4 UTF-8 CRLF {8 Python
+
+SPU ae ® MK
+
+| 38 Python Debug.
+3% Python Debug...
+
+3.11.3 64-bit ®Golive O
+
+age
+
+527 eM
+upsos @
