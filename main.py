@@ -1,9 +1,16 @@
 import sys
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt, QRectF, pyqtSignal
+from PyQt5.QtCore import Qt, QRectF, pyqtSignal, pyqtSlot
 from firstpage import Ui_Form
-from PyQt5.QtGui import QCursor, QPainterPath, QRegion, QFont
+from PyQt5.QtGui import QCursor, QPainterPath, QRegion, QFont, QImage, QPixmap
 from new_task import Ui_Dialog
+import time
+import pyautogui
+import os, subprocess
+from PIL import ImageGrab
+import pyperclip
+import pytesseract
+
 
 
 class CustomCheckBox(QWidget):
@@ -69,13 +76,27 @@ class MainWindow(QWidget):
         mask = QRegion(path.toFillPolygon().toPolygon())
         self.setMask(mask)
 
+        self.scrgrab = None
+
         self.dlg = ChildDlg()
         self.dlg.hide()
         self.ui.plus_new_task_button.clicked.connect(self.clickDlg)
         self.ui.home_button.clicked.connect(self.closeDlg)
         self.dlg.saveClicked.connect(self.saveTask)
         self.ui.expanded.clicked.connect(self.showTaskList)
-        self.showTaskListFlag = True
+
+        #set screenshot
+        self.screenShotFlag = True
+        self.ui.switch_checkbox.clicked.connect(self.setScreenShot)
+
+        #Show process modal.
+        self.modal = ModalDialog()
+        self.modal.hide()
+
+        #Captured screenshot
+        self.ui.pushButton.clicked.connect(self.click_capture)
+
+        self.showTaskListFlag = False
         # checkbox_layout = QVBoxLayout(self.ui.listWidget)
 
         # Set the checkbox_widget layout to the QVBoxLayout
@@ -84,6 +105,16 @@ class MainWindow(QWidget):
 
     def closeDlg(self):
         self.dlg.hide()
+    
+    def setScreenShot(self):
+        if(not self.screenShotFlag):
+            if self.scrgrab:
+                qimage = QImage(self.scrgrab.tobytes(), self.scrgrab.width, self.scrgrab.height, QImage.Format_RGB888).rgbSwapped()
+                self.ui.screen_label.setPixmap(QPixmap.fromImage(qimage))
+            self.screenShotFlag = True
+        else:
+            self.ui.screen_label.setPixmap(QPixmap())
+            self.screenShotFlag = False
     
     def showTaskList(self):
         if(self.showTaskListFlag):
@@ -118,6 +149,55 @@ class MainWindow(QWidget):
         list_item.setSizeHint(custom_checkbox.sizeHint())
         self.ui.listWidget.addItem(list_item)
         self.ui.listWidget.setItemWidget(list_item, custom_checkbox)
+
+    @pyqtSlot()
+    def click_capture(self):
+        self.modal.label.setText("Processing")
+        self.modal.show()
+        # self.ui.pushButton.setEnabled(False)
+        # self.textbox.setPlainText("")
+        self.update()
+        time.sleep(0.1)
+        t_start = time.perf_counter()
+        self.capture_screenshot()
+        self.perform_ocr(os.path.join(os.getcwd(), "screenshot.png"))
+        # self.button.setEnabled(True)
+        # self.label.setText("The OCR result has been copied to your clipboard.\nLast run: {:.2f} seconds".format(time.perf_counter() - t_start))
+        self.update()
+
+    def capture_screenshot(self):
+        width, height= pyautogui.size()
+        monitor_screen = (0, 0, width, height)
+        self.scrgrab = pyautogui.screenshot(region=(monitor_screen))
+        self.scrgrab.save(r'screenshot.png')
+
+    def perform_ocr(self, filename):
+        tesseract_path = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Replace with the actual path to your Tesseract executable
+        if not os.path.exists(tesseract_path):
+            print("Tesseract executable not found. Please provide the correct path.")
+            return
+        try:
+            subprocess.run([tesseract_path, filename, "screenshot"])
+        except FileNotFoundError:
+            # self.textbox.setPlainText("Tesseract is not installed. Please install it first.")
+            print("File not found.")
+            return
+        except Exception as e:
+            # self.textbox.setPlainText("An error occurred while performing OCR.\nError: {}".format(e))
+            
+            print("OCR error")
+            return
+        with open("screenshot.txt", "r") as f:
+            text = f.read()
+        pyperclip.copy(text)
+        # self.textbox.setPlainText(text)
+        # Delete 'screenshot.png' and 'screenshot.txt' files if it exists in the current directory
+        # if os.path.exists("screenshot.png"):
+        #     os.remove("screenshot.png")
+        # if os.path.exists("screenshot.txt"):
+        #     os.remove("screenshot.txt")
+
+
 
 class ChildDlg(QWidget):
     i = 0
@@ -158,6 +238,22 @@ class ChildDlg(QWidget):
 
     def saveTask(self) :
         self.saveClicked.emit(self.ui.task_description.toPlainText())
+
+class ModalDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Task is processing...')
+        
+        # Add your widgets to the dialog
+        layout = QVBoxLayout()
+        self.label = QLabel("")
+        layout.addWidget(self.label)
+        childLayout = QHBoxLayout()
+        childLayout.addWidget(QPushButton('OK'))
+        childLayout.addWidget(QPushButton('Cancel'))
+        layout.addLayout(childLayout)
+        self.setLayout(layout)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

@@ -4,7 +4,7 @@
 Recreating a Windows OS version of w/out access to the target OS (aside from HDMI, and USB devices such as keyboard/mouse):
 https://www.youtube.com/watch?v=QXJ7rImz-Wk
 
-![AI To Control Computer](https://gifrun.blob.core.windows.net/temp/7ed413d0b0f04fe194d16019387b4112.gif)
+[AI To Control Computer](https://www.youtube.com/watch?v=QXJ7rImz-Wk)
 
 ### Foreseeable challenges using the current resources and technologies for the POC mainly come from [limitations](https://platform.openai.com/docs/guides/vision#:~:text=While%20GPT%2D4,submission%20of%20CAPTCHAs.), in the OpenAI Vision model:
 Big text: Enlarge text within the image to improve readability, but avoid cropping important details.
