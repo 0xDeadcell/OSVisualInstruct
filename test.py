@@ -40,7 +40,7 @@ def animate_toggle():
     animation.setDuration(500)
     animation.setStartValue(label.geometry())
     animation.setEndValue(label.geometry().adjusted(0, 0, 0, 20))
-    animation.setEasingCurve(Qt.E)
+    # animation.setEasingCurve(Qt.Edges)
     animation.start()
 
 # Connect the checkbox stateChanged signal to the update_label_image slot

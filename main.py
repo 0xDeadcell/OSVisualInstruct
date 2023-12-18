@@ -2,16 +2,67 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QRectF, pyqtSignal, pyqtSlot
 from firstpage import Ui_Form
+
+from chat import Ui_Form as Ui_Chat
 from PyQt5.QtGui import QCursor, QPainterPath, QRegion, QFont, QImage, QPixmap
 from new_task import Ui_Dialog
+from PyQt5.QtCore import QTimer
+import asyncio
+
 import time
 import pyautogui
 import os, subprocess
 from PIL import ImageGrab
 import pyperclip
 import pytesseract
+from pytesseract import Output
+import tensorflow as tf
+import keras
+from keras.preprocessing.image import load_img, img_to_array
+from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.vgg16 import preprocess_input
+import cv2
+import pygetwindow as gw
+import pickle
+import numpy as np
+import matplotlib.pyplot as plt
+
+from socket import *
+
+import wmi
+import subprocess
+import re
+
+import win32api
+import win32net
+from gptProcess import new_task
+
+with open("labels.pkl", "rb") as f:
+    labels = pickle.load(f)
+
+print(labels)
+
+# Load the saved CNN model.
+cnn_model = tf.keras.models.load_model('saved_model')
 
 
+class ChatBox(QWidget):
+    def __init__(self, text, avatar, parent=None):
+        super().__init__()
+        self.ui = Ui_Chat()
+        self.ui.setupUi(self)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        if avatar=="user":
+            self.ui.avatar.setPixmap(QPixmap(":/assets/user.png"))
+            self.ui.chat_user.setText("Linda")
+        else:
+            self.ui.avatar.setPixmap(QPixmap(":/assets/robot.png"))
+            self.ui.chat_user.setText("OSVisualInstruct")
+
+        self.ui.chat_content.setText(text)
+        self.ui.chat_time.setText(time.strftime("%Y-%m-%d %H:%M:%S"))
+        
+        
 
 class CustomCheckBox(QWidget):
     def __init__(self, text, parent=None):
@@ -87,7 +138,7 @@ class MainWindow(QWidget):
 
         #set screenshot
         self.screenShotFlag = True
-        self.ui.switch_checkbox.clicked.connect(self.setScreenShot)
+        self.ui.switch_checkbox.stateChanged.connect(self.setScreenShot)
 
         #Show process modal.
         self.modal = ModalDialog()
@@ -102,9 +153,37 @@ class MainWindow(QWidget):
         # Set the checkbox_widget layout to the QVBoxLayout
         # self.ui.listWidget.setLayout(checkbox_layout)
 
+        # add timer
+        self.timer = QTimer(self)
+
+        self.timer.timeout.connect(self.update_screen)
+        self.start_timer()
+
+    def start_timer(self):
+        self.timer.start(4000)
+
+
+    def update_screen(self):
+        if(self.screenShotFlag):
+            # self.capture_screenshot()
+            self.updateComputerVision()
+            # self.perform_predict(os.path.join(os.getcwd(), "screenshot.png"))
+            # self.perform_ocr(os.path.join(os.getcwd(), "screenshot.png"))
+
 
     def closeDlg(self):
         self.dlg.hide()
+
+    def updateComputerVision(self):
+        if self.scrgrab:
+            qimage = QImage(self.scrgrab.tobytes(), self.scrgrab.width, self.scrgrab.height, QImage.Format_RGB888)
+            # Load the .png file
+            image_path = "processed_img.png"
+            pixmap = QPixmap(image_path)         
+            # pixmap = QPixmap.fromImage(qimage)
+            if not pixmap.isNull():
+                self.ui.screen_label.setPixmap(pixmap)
+            # print(self.scrgrab.width, self.scrgrab.height, QImage.Format_RGB888)
     
     def setScreenShot(self):
         if(not self.screenShotFlag):
@@ -150,52 +229,147 @@ class MainWindow(QWidget):
         self.ui.listWidget.addItem(list_item)
         self.ui.listWidget.setItemWidget(list_item, custom_checkbox)
 
+    def saveConversation(self, conversation, avatar):
+        chat = ChatBox(conversation, avatar)
+        list_item = QListWidgetItem()
+        list_item.setSizeHint(chat.size())
+        self.ui.chat_list.addItem(list_item)
+        self.ui.chat_list.setItemWidget(list_item, chat)
+        print(self.ui.chat_list.count())
+        
+
     @pyqtSlot()
     def click_capture(self):
-        self.modal.label.setText("Processing")
-        self.modal.show()
+
+        # self.modal.label.setText("Processing")
+        # self.modal.show()
         # self.ui.pushButton.setEnabled(False)
         # self.textbox.setPlainText("")
-        self.update()
-        time.sleep(0.1)
-        t_start = time.perf_counter()
+
+        # self.update()
+        # time.sleep(0.1)
+        # t_start = time.perf_counter()
+        prompt = self.ui.message_content.toPlainText()
+        print(prompt)
+        
+        self.saveConversation(prompt, "user")
+        self.saveConversation("Taking screenshot to understand desktop environement...\nSending request to Chat-gpt-3.5-turbo to build out sub-tasks...", "gpt")
+        time.sleep(3)
+        
+
+
+        subtaskList = new_task(prompt)
+        for subtask in subtaskList:
+            self.saveTask(subtask)
+        print(subtaskList)
+
         self.capture_screenshot()
         self.perform_ocr(os.path.join(os.getcwd(), "screenshot.png"))
+        
+
+        # self.perform_predict(os.path.join(os.getcwd(), "screenshot.png"))
+
         # self.button.setEnabled(True)
         # self.label.setText("The OCR result has been copied to your clipboard.\nLast run: {:.2f} seconds".format(time.perf_counter() - t_start))
+
         self.update()
 
     def capture_screenshot(self):
-        width, height= pyautogui.size()
-        monitor_screen = (0, 0, width, height)
-        self.scrgrab = pyautogui.screenshot(region=(monitor_screen))
+        # width, height= pyautogui.size()
+        # window_rect = (0, 0, width, height)
+
+
+        # Get all the open windows
+        windows = gw.getAllWindows()
+        
+        # Get the second window (index 1)
+        curWindow = windows[2]
+        # window = windows[2]
+
+        titleList = gw.getAllTitles()
+
+        title = titleList[3]
+        print(title)
+        # window.activate()
+
+
+        # Get the position and size of the second window frame
+        # window_rect = (window.left, window.top, window.width, window.height)
+
+
+        # curWindow.activate()
+        ##
+        window = pyautogui.getActiveWindow()
+        window_rect = window.left, window.top, window.width, window.height
+        print(window_rect)
+        self.scrgrab = pyautogui.screenshot(region=window_rect)
         self.scrgrab.save(r'screenshot.png')
 
+
+
+
+
+
+
+    def perform_predict(self, filename):
+
+        image = cv2.imread(filename)
+
+        # Resize the image to the desired shape
+        resized_image = cv2.resize(image, (212, 212))
+        resized_image = np.array(resized_image)
+        # print(resized_image.shape)
+        # Expand the dimensions to match the model input shape
+        input_image = np.expand_dims(resized_image, axis=0)
+        # print(input_image.shape)
+
+
+        # Make a prediction using the CNN model.
+        pred = cnn_model.predict(input_image)
+
+        # print(pred)
+
+        # Display the prediction.
+        idx = 0
+        predicted_label = labels[np.argmax(pred[idx])]
+        # print(predicted_label)
+
     def perform_ocr(self, filename):
-        tesseract_path = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Replace with the actual path to your Tesseract executable
-        if not os.path.exists(tesseract_path):
-            print("Tesseract executable not found. Please provide the correct path.")
-            return
-        try:
-            subprocess.run([tesseract_path, filename, "screenshot"])
-        except FileNotFoundError:
-            # self.textbox.setPlainText("Tesseract is not installed. Please install it first.")
-            print("File not found.")
-            return
-        except Exception as e:
-            # self.textbox.setPlainText("An error occurred while performing OCR.\nError: {}".format(e))
+        
+        img = cv2.imread(filename)
+        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        cv2.threshold(gray_img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+        # cv2.Canny(gray_img, 100, 200)
+
+
+        d = pytesseract.image_to_data(img, output_type=Output.DICT)
+        # print(d.keys())
+        n_boxes = len(d['text'])
+        for i in range(n_boxes):
+            if int(d['conf'][i]) > 60:
+                (x, y, w, h) = (d['left'][i], d['top'][i], d['width'][i], d['height'][i])
+                img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        imageNames = os.listdir('./buttons')
+        
+        for imageName in imageNames:
+            try:
+                button7location = pyautogui.locateOnScreen('./buttons/'+imageName, confidence=0.9)
+                print('postion:', button7location)
+                button7point = pyautogui.center(button7location)
+                button7x, button7y = button7point
+                print(button7x, button7y)
+                pyautogui.moveTo(button7x, button7y)
+                time.sleep(0.5)
+                img = cv2.rectangle(img, (button7location.left, button7location.top), (button7location.left + button7location.width, button7location.top+button7location.height), (0, 0, 255), 2)
+            except Exception as e:
+                continue
+            # button7location = pyautogui.locateOnScreen('./buttons/'+imageName, confidence=0.6)
             
-            print("OCR error")
-            return
-        with open("screenshot.txt", "r") as f:
-            text = f.read()
-        pyperclip.copy(text)
-        # self.textbox.setPlainText(text)
-        # Delete 'screenshot.png' and 'screenshot.txt' files if it exists in the current directory
-        # if os.path.exists("screenshot.png"):
-        #     os.remove("screenshot.png")
-        # if os.path.exists("screenshot.txt"):
-        #     os.remove("screenshot.txt")
+            # pyautogui.click(button7x, button7y)
+        cv2.imshow('img', img)
+        cv2.imwrite('processed_img.png', img)
+        cv2.waitKey(0)
+
 
 
 

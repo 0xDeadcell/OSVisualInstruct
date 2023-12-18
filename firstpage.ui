@@ -546,6 +546,24 @@ QCheckBox::indicator:checked {
       <string/>
      </property>
     </widget>
+    <widget class="QWidget" name="chat_panel" native="true">
+     <property name="geometry">
+      <rect>
+       <x>310</x>
+       <y>100</y>
+       <width>1021</width>
+       <height>601</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">
+        QWidget{
+            border: 1px solid #2e2e2e;
+            border-radius: 24%;
+        }
+      </string>
+     </property>
+    </widget>
     <zorder>combobox_label</zorder>
     <zorder>task_title_label</zorder>
     <zorder>screen_widget</zorder>
@@ -561,6 +579,7 @@ QCheckBox::indicator:checked {
     <zorder>title_label</zorder>
     <zorder>listWidget</zorder>
     <zorder>expanded</zorder>
+    <zorder>chat_panel</zorder>
    </widget>
    <widget class="QWidget" name="new_task_page">
     <property name="styleSheet">

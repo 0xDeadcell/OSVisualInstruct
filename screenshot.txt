@@ -1,92 +1,60 @@
-J File Edit Selection View Go
+J File Edit Selection View Go Run Terminal Help P osvisualinstruct Oodn - x
 
-fs
-se)
-®
-4
+| Q EXPLORER:
 
-EXPLORER,
-
-\ OPEN EDITORS
->) Welcome
-X ® mainpy
-® firstpage.py
 \ OSVISUALINSTRUCT
-> _pycache_
+
+py 2M X
+
+5) > _pycache_
+
+> .wscode OSVisuallnstruct Assistant
 > assets
-> docs
+> docs TASKS 2
+> saved_model tt
+
 gitignore
-convertdlg.bat
-convertpy.bat
-firstpage.py
-firstpage.ui
+8 convertdig.bat
+8 convertpy.bat
 
->
+your Tesserac
 
-main.py
-new_task py
-new_task.ui
-README.md
+® firstpage.py
 
-Tesource_rc.py
+= firstpage.ui
 
-@
-tTROMmPM*YAA
+labels.pki
+® main.py
 
-resource.py
-® testpy
+® new taskpy
+= new taskui
+@ README.md
 
-\ PROBLEMS
-Filter (e.g, text, **/*.ts,
+A
+¢
+(>)  resized_imagejpg
++
 
-No problems have bee!
+® resource rcpy
 
-(2) ©
-§ob > OUTLINE
+ resourceppy
 
+'& screenshot png
+
+screenshot.txt
+© testpy
+
+Type your message here...
+» 8: ‘Obsidian’, 9
+smd", 17: ‘control*
+26: ‘regedit’, 27:
+
+(2) e Show Al Vision preview @—) ° e > wailable CPU instr
+
+ =<ch the appropriate co
+
+> OUTLINE mpiler flags.
 > TIMELINE
 
-Run
+[BAY & mains oO @0A2 Wo Ln316,Col19 Spaces:4 UTF-8 CRLF {3 Python 3.17.064-bit O
 
-Terminal Help
-
-TASKS
-
-Show Al Vision preview
-
-WEG] & firstmilestones Cf @oAo Wo &
-
-OSVisuallnstruct Assistant
-
-P osVisualinstruct
-
-Type your message here....
-
-10\0SVisualInstruct\main. py*
-
-mOoGGuUdiv Ges
-
-ory
-
-alInst
-thon-2
-B\n_
-
-> = ilinst
-e thon-2
-
-_13\11_
-
-9 You,now Ln 198, Col 42 (170 selected) Spaces:4 UTF-8 CRLF {8 Python
-
-SPU ae ® MK
-
-| 38 Python Debug.
-3% Python Debug...
-
-3.11.3 64-bit ®Golive O
-
-age
-
-527 eM
-upsos @
