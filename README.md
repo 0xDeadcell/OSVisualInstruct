@@ -102,4 +102,18 @@ response = client.chat.completions.create(
 print(response.choices[0])
 ```
 
+### Set Environment
+>Python Version : 3.11.0
+
+```
+python -m pip install -r requirements.txt
+```
+
+
+### Run
+```
+python main.py
+```
+
+
 

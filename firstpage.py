@@ -285,6 +285,36 @@ class Ui_Form(object):
 "    border:0px solid white;\n"
 "}")
         self.chat_list.setObjectName("chat_list")
+        self.close_btn = QtWidgets.QPushButton(self.home_page)
+        self.close_btn.setGeometry(QtCore.QRect(1290, 0, 41, 41))
+        self.close_btn.setStyleSheet("#close_btn{\n"
+"    border:none;\n"
+"    background-color:transparent;\n"
+"    color:white;\n"
+"    font-size:20pt;\n"
+"}\n"
+"#close_btn:hover{\n"
+"    border:none;\n"
+"    background-color:transparent;\n"
+"    color:white;\n"
+"    font-size:24pt;\n"
+"}")
+        self.close_btn.setObjectName("close_btn")
+        self.minimum_btn = QtWidgets.QPushButton(self.home_page)
+        self.minimum_btn.setGeometry(QtCore.QRect(1240, 0, 41, 41))
+        self.minimum_btn.setStyleSheet("#minimum_btn{\n"
+"    border:none;\n"
+"    background-color:transparent;\n"
+"    color:white;\n"
+"    font-size:24pt;\n"
+"}\n"
+"#minimum_btn:hover{\n"
+"    border:none;\n"
+"    background-color:transparent;\n"
+"    color:white;\n"
+"    font-size:28pt;\n"
+"}")
+        self.minimum_btn.setObjectName("minimum_btn")
         self.combobox_label.raise_()
         self.task_title_label.raise_()
         self.screen_widget.raise_()
@@ -301,6 +331,8 @@ class Ui_Form(object):
         self.listWidget.raise_()
         self.expanded.raise_()
         self.chat_panel.raise_()
+        self.close_btn.raise_()
+        self.minimum_btn.raise_()
         self.stackedWidget.addWidget(self.home_page)
         self.new_task_page = QtWidgets.QWidget()
         self.new_task_page.setStyleSheet("QWidget{\n"
@@ -361,4 +393,6 @@ class Ui_Form(object):
         self.assistant_title_label.setText(_translate("Form", "OSVisualInstruct Assistant"))
         self.message_content.setPlaceholderText(_translate("Form", "Type your message here...."))
         self.title_label.setText(_translate("Form", "OSViusalInstruct"))
+        self.close_btn.setText(_translate("Form", "x"))
+        self.minimum_btn.setText(_translate("Form", "-"))
 import resource_rc

@@ -1,19 +1,20 @@
 import sys
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt, QRectF, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QEvent, Qt, QRectF, pyqtSignal, pyqtSlot, QThread, QObject
+from PyQt5 import QtCore
 from firstpage import Ui_Form
 
 from chat import Ui_Form as Ui_Chat
 from PyQt5.QtGui import QCursor, QPainterPath, QRegion, QFont, QImage, QPixmap
 from new_task import Ui_Dialog
 from PyQt5.QtCore import QTimer
-import asyncio
+import schedule
+import datetime
 
 import time
 import pyautogui
 import os, subprocess
 from PIL import ImageGrab
-import pyperclip
 import pytesseract
 from pytesseract import Output
 import tensorflow as tf
@@ -26,16 +27,16 @@ import pygetwindow as gw
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
+import threading
+from splash import *
 
 from socket import *
 
-import wmi
 import subprocess
-import re
+from subprocess import PIPE, Popen
 
-import win32api
-import win32net
-from gptProcess import new_task
+from gptProcess import new_task, order_task
+
 
 with open("labels.pkl", "rb") as f:
     labels = pickle.load(f)
@@ -45,6 +46,47 @@ print(labels)
 # Load the saved CNN model.
 cnn_model = tf.keras.models.load_model('saved_model')
 
+gpt_prompt = ""
+gpt_subtask = []
+
+task_prompt = ""
+task_result = []
+file_name = ""
+
+
+class GptProcess(QObject):
+    finished = pyqtSignal()
+    subTaskGenerated = pyqtSignal()
+
+    def run(self):
+        print("thread run!!!!!!!!!!!!!!!!!!!!")
+        print("gpt====", gpt_prompt)
+        global gpt_subtask
+        gpt_subtask = new_task(gpt_prompt)
+        print("result", gpt_subtask)
+        self.subTaskGenerated.emit()
+        run_external_file()
+        self.finished.emit()
+
+class TaskGPTProcess(QObject):
+    finished = pyqtSignal()
+    subTaskGenerated = pyqtSignal()
+
+    def run(self):
+        print("task-----------thread run!!!!!!!!!!!!!!!!!!!!")
+        print("gpt====", task_prompt)
+        global task_subtask
+        task_result = order_task(gpt_prompt)
+        self.subTaskGenerated.emit()
+
+class taskProcess(QObject):
+    finished = pyqtSignal()
+    subTaskGenerated = pyqtSignal()
+
+    def run(self):
+        print("afasdfasdfsafatasks fsf -----------------------")
+        run_task_file()
+        self.finished.emit()
 
 class ChatBox(QWidget):
     def __init__(self, text, avatar, parent=None):
@@ -62,7 +104,68 @@ class ChatBox(QWidget):
         self.ui.chat_content.setText(text)
         self.ui.chat_time.setText(time.strftime("%Y-%m-%d %H:%M:%S"))
         
-        
+
+
+def run_external_file():
+    process=subprocess.Popen(["python","instruction.py"],stdin=PIPE,stdout=PIPE)
+    stdout, stderr = process.communicate()
+    print(stdout, stderr)  
+
+def run_task_file():
+    global file_name
+    print("file---------------------------:", file_name)
+    process=subprocess.Popen(["python", file_name],stdin=PIPE,stdout=PIPE)
+    stdout, stderr = process.communicate()
+    print(stdout, stderr)  
+
+class RadioCheckBox(QWidget):
+    def __init__(self, text, parent=None):
+        super(RadioCheckBox, self).__init__(parent)
+
+        # Create a horizontal layout
+        layout = QHBoxLayout()
+        # Create the checkbox
+        self.checkbox = QCheckBox()
+        self.checkbox.setStyleSheet("""
+            QCheckBox::indicator {
+                width: 20px;
+                height: 20px;
+            }
+            QCheckBox::indicator:unchecked {
+                image: url(:/assets/Radio unselect.png);
+            }
+            QCheckBox::indicator:checked {
+                image: url(:/assets/Radio select.png);
+            }
+            QCheckBox::indicator:checked:hover {
+                image: url(:/assets/Radio select.png);
+            }
+            QCheckBox::indicator:unchecked:hover {
+                image: url(:/assets/Radio unselect.png);
+            }
+            QCheckBox {
+                color: #fff;
+            }
+        """)
+
+        # Create the label
+        self.label = QLabel(text)
+        font = QFont()
+        font.setFamily("Source Sans Pro")
+        font.setPointSize(13)
+        font.setBold(False)
+        font.setWeight(50)
+        self.label.setFont(font)
+        self.label.setStyleSheet("QLabel{\n"
+        "    color: #fff;\n"
+        "}")
+        # Add the checkbox and label to the layout
+        layout.addWidget(self.checkbox)
+        layout.addWidget(self.label, 1)
+
+        # Set the layout for the custom checkbox
+        self.setLayout(layout)
+
 
 class CustomCheckBox(QWidget):
     def __init__(self, text, parent=None):
@@ -144,6 +247,10 @@ class MainWindow(QWidget):
         self.modal = ModalDialog()
         self.modal.hide()
 
+        #windows control button link
+        self.ui.close_btn.clicked.connect(self.close)
+        self.ui.minimum_btn.clicked.connect(self.minimize)
+
         #Captured screenshot
         self.ui.pushButton.clicked.connect(self.click_capture)
 
@@ -159,13 +266,80 @@ class MainWindow(QWidget):
         self.timer.timeout.connect(self.update_screen)
         self.start_timer()
 
+        #spalsh screen
+        self.movie = QMovie("loading.gif")
+        self.splash = MovieSplashScreen(movie)
+
+
+        
+
+    def minimize(self):
+        # Minimize the window
+        self.showMinimized()
+
+    def close_window(self):
+        self.close
+
     def start_timer(self):
-        self.timer.start(4000)
+        self.timer.start(1000)
+
+    def check_order(self):
+        with open("order.txt", "r") as f:
+            orders = f.read()
+            order_list = orders.split('\n')
+
+            for order in order_list:
+                order_detail = order.split(', ')
+                if order_detail[0] == 'Week':
+                    startDay = order_detail[1][0:10]
+                    date_obj = datetime.datetime.strptime(startDay, '%Y-%m-%d')
+                    setWeekday = date_obj.strftime('%A')
+
+                    today = datetime.datetime.now()
+                    weekday = today.strftime('%A')
+                    if setWeekday == weekday:
+                        current_time = today.strftime("%H:%M:%S")
+                        if order_detail[1][-8:] == current_time:
+                            global file_name
+                            file_name = order_detail[2]
+
+                            print("hello!!!")
+
+                elif order_detail[0] == 'Daily':
+                    today = datetime.datetime.now()
+                    current_time = today.strftime("%H:%M:%S")
+                    if order_detail[1][-8:] == current_time:
+                        file_name = order_detail[2]
+                        
+                        self.taskThread = QThread()
+                        self.taskProcess = taskProcess()
+
+
+                        self.taskProcess.moveToThread(self.taskThread)
+                        self.taskThread.started.connect(self.taskProcess.run)
+                        self.taskProcess.finished.connect(self.taskThread.quit)
+                        self.taskProcess.finished.connect(self.taskProcess.deleteLater)
+                        self.taskThread.finished.connect(self.taskThread.deleteLater)
+
+                        
+                        self.taskThread.start()
+
+                        print("helloo!!!")
+                elif order_detail[0] == 'Month':
+                    print(order_detail[1][0:7])
+                elif order_detail[0] == 'Year':
+                    print(order_detail[1][0:4])
+                else:
+                    continue
+                    
 
 
     def update_screen(self):
+
+        self.check_order()
+
         if(self.screenShotFlag):
-            # self.capture_screenshot()
+            self.capture_screenshot()
             self.updateComputerVision()
             # self.perform_predict(os.path.join(os.getcwd(), "screenshot.png"))
             # self.perform_ocr(os.path.join(os.getcwd(), "screenshot.png"))
@@ -178,7 +352,8 @@ class MainWindow(QWidget):
         if self.scrgrab:
             qimage = QImage(self.scrgrab.tobytes(), self.scrgrab.width, self.scrgrab.height, QImage.Format_RGB888)
             # Load the .png file
-            image_path = "processed_img.png"
+            # image_path = "processed_img.png"
+            image_path = "screenshot.png"
             pixmap = QPixmap(image_path)         
             # pixmap = QPixmap.fromImage(qimage)
             if not pixmap.isNull():
@@ -228,6 +403,9 @@ class MainWindow(QWidget):
         list_item.setSizeHint(custom_checkbox.sizeHint())
         self.ui.listWidget.addItem(list_item)
         self.ui.listWidget.setItemWidget(list_item, custom_checkbox)
+    
+    def initTask(self):
+        self.ui.listWidget.clear()
 
     def saveConversation(self, conversation, avatar):
         chat = ChatBox(conversation, avatar)
@@ -235,36 +413,54 @@ class MainWindow(QWidget):
         list_item.setSizeHint(chat.size())
         self.ui.chat_list.addItem(list_item)
         self.ui.chat_list.setItemWidget(list_item, chat)
-        print(self.ui.chat_list.count())
         
+
+    def update_UI(self, prompt):
+        self.saveConversation(prompt, "user")
+        self.saveConversation("Taking screenshot to understand desktop environement...\nSending request to Chat-gpt-3.5-turbo to build out sub-tasks...", "gpt")
+
+
+    def updateSubList(self):
+        global gpt_subtask
+        self.initTask()
+        for list in gpt_subtask:
+            self.saveTask(list)
+
 
     @pyqtSlot()
     def click_capture(self):
 
         # self.modal.label.setText("Processing")
         # self.modal.show()
-        # self.ui.pushButton.setEnabled(False)
+        self.splash.show()
+        self.splash.movie.start()
+
+
+        self.ui.pushButton.setEnabled(False)
         # self.textbox.setPlainText("")
+        global gpt_prompt
+        gpt_prompt = self.ui.message_content.toPlainText()
+        self.ui.message_content.setPlainText("")
+        print("local gpt", gpt_prompt)
 
-        # self.update()
-        # time.sleep(0.1)
-        # t_start = time.perf_counter()
-        prompt = self.ui.message_content.toPlainText()
-        print(prompt)
+        self.update_UI(gpt_prompt)
         
-        self.saveConversation(prompt, "user")
-        self.saveConversation("Taking screenshot to understand desktop environement...\nSending request to Chat-gpt-3.5-turbo to build out sub-tasks...", "gpt")
-        time.sleep(3)
+        self.thread = QThread()
+        self.gptProcess = GptProcess()
+
+        self.gptProcess.moveToThread(self.thread)
+        self.thread.started.connect(self.gptProcess.run)
+        self.gptProcess.finished.connect(self.thread.quit)
+        self.gptProcess.finished.connect(self.gptProcess.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.gptProcess.subTaskGenerated.connect(self.updateSubList)
+        self.gptProcess.finished.connect(self.finishGpt)
+
+        self.thread.start()
         
-
-
-        subtaskList = new_task(prompt)
-        for subtask in subtaskList:
-            self.saveTask(subtask)
-        print(subtaskList)
 
         self.capture_screenshot()
-        self.perform_ocr(os.path.join(os.getcwd(), "screenshot.png"))
+        # self.perform_ocr(os.path.join(os.getcwd(), "screenshot.png"))
         
 
         # self.perform_predict(os.path.join(os.getcwd(), "screenshot.png"))
@@ -273,6 +469,14 @@ class MainWindow(QWidget):
         # self.label.setText("The OCR result has been copied to your clipboard.\nLast run: {:.2f} seconds".format(time.perf_counter() - t_start))
 
         self.update()
+
+    def finishGpt(self):
+        # self.modal.hide()
+        self.splash.hide()
+        self.ui.pushButton.setEnabled(True)
+        lw = self.ui.listWidget
+        for x in range(lw.count()-1):
+            self.ui.listWidget.itemWidget(lw.item(x)).checkbox.setChecked(True)
 
     def capture_screenshot(self):
         # width, height= pyautogui.size()
@@ -299,16 +503,15 @@ class MainWindow(QWidget):
 
         # curWindow.activate()
         ##
-        window = pyautogui.getActiveWindow()
-        window_rect = window.left, window.top, window.width, window.height
+        window_rect = 100, 1000, 100, 100
+        try:
+            window = pyautogui.getActiveWindow()
+            window_rect = window.left, window.top, window.width, window.height
+        except Exception as e:
+            print(e)
         print(window_rect)
         self.scrgrab = pyautogui.screenshot(region=window_rect)
         self.scrgrab.save(r'screenshot.png')
-
-
-
-
-
 
 
     def perform_predict(self, filename):
@@ -358,17 +561,16 @@ class MainWindow(QWidget):
                 button7point = pyautogui.center(button7location)
                 button7x, button7y = button7point
                 print(button7x, button7y)
-                pyautogui.moveTo(button7x, button7y)
-                time.sleep(0.5)
+                # pyautogui.moveTo(button7x, button7y)
                 img = cv2.rectangle(img, (button7location.left, button7location.top), (button7location.left + button7location.width, button7location.top+button7location.height), (0, 0, 255), 2)
             except Exception as e:
                 continue
             # button7location = pyautogui.locateOnScreen('./buttons/'+imageName, confidence=0.6)
             
             # pyautogui.click(button7x, button7y)
-        cv2.imshow('img', img)
+        # cv2.imshow('img', img)
         cv2.imwrite('processed_img.png', img)
-        cv2.waitKey(0)
+        # cv2.waitKey(0)
 
 
 
@@ -376,6 +578,7 @@ class MainWindow(QWidget):
 class ChildDlg(QWidget):
     i = 0
     saveClicked = pyqtSignal(str)
+    
     def __init__(self):
         super().__init__()
 
@@ -392,6 +595,19 @@ class ChildDlg(QWidget):
         self.ui.start_task_label.mousePressEvent = self.status
         self.ui.close_button.clicked.connect(self.hide)
         self.ui.save_button.clicked.connect(self.saveTask)
+        self.ui.task_description.installEventFilter(self)
+        self.prompt = ""
+        self.fileName = ""
+
+    def eventFilter(self, obj, event):
+        if event.type() == QtCore.QEvent.KeyPress and obj is self.ui.task_description:
+            if event.key() == QtCore.Qt.Key_Return and self.ui.task_description.hasFocus():
+                self.prompt = self.ui.task_description.toPlainText()
+                gpt_result = order_task(self.prompt)
+                self.fileName = gpt_result[1]
+                for task in gpt_result[0]:
+                    self.addSubTask(task)
+        return super().eventFilter(obj, event)
     def status(self, event):
         if event.button() == Qt.LeftButton:
             self.i = not self.i
@@ -410,8 +626,27 @@ class ChildDlg(QWidget):
                 "}")
             self.ui.start_task_label.setText("Start Task")
 
+    def addSubTask(self, taskName):
+        custom_checkbox = RadioCheckBox(taskName)
+        list_item = QListWidgetItem()
+        list_item.setSizeHint(custom_checkbox.sizeHint())
+        self.ui.listWidget.addItem(list_item)
+        self.ui.listWidget.setItemWidget(list_item, custom_checkbox)
+
     def saveTask(self) :
-        self.saveClicked.emit(self.ui.task_description.toPlainText())
+        taskField = ""
+        # Get the current time in seconds since the Unix epoch
+        current_time = time.time()
+        self.prompt = self.ui.task_description.toPlainText()
+        # Get the current time as a string in the format "YYYY-MM-DD HH:MM:SS"
+        current_time_string = time.strftime("%Y-%m-%d %H:%M:%S")
+        taskField += self.ui.comboBox.currentText() + ", "
+        taskField += current_time_string + ", "
+        taskField += self.fileName + ", "
+        taskField += self.prompt
+        print(taskField)
+        with open("order.txt", "a+") as f:
+            f.write(taskField)
 
 class ModalDialog(QDialog):
     def __init__(self):
@@ -431,6 +666,16 @@ class ModalDialog(QDialog):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    movie = QMovie("loading.gif")
+    splash = MovieSplashScreen(movie)
+    splash.show()
+    splash.movie.start()
+    start = time.time()
+
+    while movie.state() == QMovie.Running and time.time() < start + 7:
+        app.processEvents()
+
     window = MainWindow()
     window.show()
+    splash.finish(window)
     sys.exit(app.exec_())
