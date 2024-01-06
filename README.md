@@ -105,6 +105,8 @@ print(response.choices[0])
 ### Set Environment
 >Python Version : 3.11.0
 
+> install tesseract OCR x64 for windows.
+
 ```
 python -m pip install -r requirements.txt
 ```
